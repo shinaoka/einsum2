@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 from Cython.Build import cythonize
-from distutils.extension import Extension
+from setuptools.extension import Extension
 import numpy
 
 extensions = [Extension("einsum2.parallel_matmul",
