@@ -1,6 +1,7 @@
 import einsum2
 import autograd
 import autograd.numpy as np
+import pytest
 
 def test_batched_dot():
     I,J,K,L = np.random.randint(1, 4, size=4)
@@ -10,10 +11,11 @@ def test_batched_dot():
 
     assert np.allclose(einsum2.batched_dot(A,B), A @ B)
 
-def test_einsum2():
+@pytest.mark.parametrize("dtype", [np.double, np.complex])
+def test_einsum2(dtype):
     p = .5
-    A, Adims = random_tensor(p)
-    B, Bdims = random_tensor(p)
+    A, Adims = random_tensor(p, dtype)
+    B, Bdims = random_tensor(p, dtype)
     Cdims = np.random.permutation([k for k in set(Adims + Bdims) if np.random.uniform() <= p])
 
     dim_idxs = {k:i for i,k in enumerate(set(Adims + Bdims))}
@@ -49,8 +51,14 @@ def test_grad():
     B, Bdims = random_tensor(p)
     assert np.allclose(grad0(B, Bdims), grad1(B, Bdims))
 
-def random_tensor(p):
+def random_tensor(p, dtype=np.double):
     dims = {"a": 1, "b":2, "c":2, "d":3, "e":4}
     Adims = list(np.random.permutation([k for k in dims if np.random.uniform() <= p]))
-    A = np.random.normal(size=[dims[s] for s in Adims])
-    return A, Adims
+    if dtype == np.double:
+        A = np.random.normal(size=[dims[s] for s in Adims])
+        return A, Adims
+    elif dtype == np.complex:
+        A = np.random.normal(size=[dims[s] for s in Adims]) + 1J *  np.random.normal(size=[dims[s] for s in Adims])
+        return A, Adims
+    else:
+        raise RuntimeError("Invalid dtype")
